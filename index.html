@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spinning Wheel Calendar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 60px;
+            align-items: center;
+            max-width: 1200px;
+        }
+
+        .wheel-section {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            display: block;
+            cursor: grab;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+            border-radius: 50%;
+        }
+
+        canvas:active {
+            cursor: grabbing;
+        }
+
+        .selector-line {
+            position: absolute;
+            right: -40px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 8px;
+            background: linear-gradient(90deg, #00d4ff, #0099ff);
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.5);
+        }
+
+        .info-section {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            min-width: 300px;
+        }
+
+        .info-section h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .date-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .date-display .day-name {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .date-display .date-value {
+            font-size: 18px;
+            opacity: 0.95;
+        }
+
+        .details {
+            display: grid;
+            gap: 15px;
+        }
+
+        .detail-item {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .detail-item label {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .detail-item .value {
+            color: #333;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .instructions {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .instructions strong {
+            color: #333;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                gap: 40px;
+            }
+
+            .selector-line {
+                right: 50%;
+                top: -40px;
+                width: 8px;
+                height: 40px;
+                transform: translateX(50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="wheel-section">
+            <canvas id="wheelCanvas"></canvas>
+            <div class="selector-line"></div>
+        </div>
+
+        <div class="info-section">
+            <h2>Selected Date</h2>
+            <div class="date-display">
+                <div class="day-name" id="dayName">Monday</div>
+                <div class="date-value" id="dateValue">January 1, 2024</div>
+            </div>
+
+            <div class="details">
+                <div class="detail-item">
+                    <label>Month</label>
+                    <div class="value" id="monthValue">January</div>
+                </div>
+                <div class="detail-item">
+                    <label>Date</label>
+                    <div class="value" id="dateNumValue">01</div>
+                </div>
+                <div class="detail-item">
+                    <label>Year</label>
+                    <div class="value" id="yearValue">2024</div>
+                </div>
+                <div class="detail-item">
+                    <label>Day of Week</label>
+                    <div class="value" id="dayOfWeekValue">Monday</div>
+                </div>
+            </div>
+
+            <div class="instructions">
+                <strong>How to use:</strong>
+                <ul style="margin-left: 15px; margin-top: 10px;">
+                    <li>Drag any wheel to spin it</li>
+                    <li>Align the selector line on the right</li>
+                    <li>View the selected date details</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="calendar.js"></script>
+</body>
+</html>
