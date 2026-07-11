@@ -6,13 +6,12 @@ class SpinningWheelCalendar {
             return;
         }
         
-        this.ctx = this.canvas.getContext('2d');
-        this.setupCanvas();
+        this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
         
-        // Wheel configuration (will scale based on canvas size)
-        this.outerRadius = 0;
-        this.middleRadius = 0;
-        this.innerRadius = 0;
+        // Wheel configuration
+        this.outerRadius = 200;
+        this.middleRadius = 130;
+        this.innerRadius = 60;
         
         // Rotation angles (in radians)
         this.dateRotation = 0;
@@ -43,33 +42,14 @@ class SpinningWheelCalendar {
         
         this.setupEventListeners();
         this.updateDisplay();
-        this.draw();
         
         // Animation loop
-        setInterval(() => this.draw(), 30);
-        
-        // Handle window resize
-        window.addEventListener('resize', () => this.setupCanvas());
+        this.animate();
     }
     
-    setupCanvas() {
-        // Get the wheel section dimensions
-        const wheelSection = this.canvas.parentElement;
-        let size = Math.min(wheelSection.clientWidth, wheelSection.clientHeight);
-        
-        // Set minimum and maximum sizes
-        size = Math.max(200, Math.min(size, 400));
-        
-        this.canvas.width = size;
-        this.canvas.height = size;
-        
-        this.centerX = this.canvas.width / 2;
-        this.centerY = this.canvas.height / 2;
-        
-        // Set radii based on canvas size
-        this.outerRadius = size * 0.44;
-        this.middleRadius = size * 0.29;
-        this.innerRadius = size * 0.14;
+    animate() {
+        this.draw();
+        requestAnimationFrame(() => this.animate());
     }
     
     setupEventListeners() {
@@ -85,8 +65,8 @@ class SpinningWheelCalendar {
     
     onMouseDown(e) {
         const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left - this.centerX;
-        const y = e.clientY - rect.top - this.centerY;
+        const x = e.clientX - rect.left - this.canvas.width / 2;
+        const y = e.clientY - rect.top - this.canvas.height / 2;
         const distance = Math.sqrt(x * x + y * y);
         
         this.isDragging = true;
@@ -129,8 +109,8 @@ class SpinningWheelCalendar {
     onTouchStart(e) {
         const touch = e.touches[0];
         const rect = this.canvas.getBoundingClientRect();
-        const x = touch.clientX - rect.left - this.centerX;
-        const y = touch.clientY - rect.top - this.centerY;
+        const x = touch.clientX - rect.left - this.canvas.width / 2;
+        const y = touch.clientY - rect.top - this.canvas.height / 2;
         const distance = Math.sqrt(x * x + y * y);
         
         this.isDragging = true;
@@ -194,11 +174,6 @@ class SpinningWheelCalendar {
         const dateObj = new Date(year, monthIndex, date);
         const dayName = this.days[dateObj.getDay()];
         
-        // Validate date (handle cases like Feb 30)
-        if (dateObj.getMonth() !== monthIndex) {
-            dateObj.setDate(0);
-        }
-        
         const dateString = `${month} ${date}, ${year}`;
         
         document.getElementById('dayName').textContent = dayName;
@@ -215,29 +190,30 @@ class SpinningWheelCalendar {
             
             // Draw segment background
             this.ctx.beginPath();
-            this.ctx.moveTo(this.centerX, this.centerY);
-            this.ctx.arc(this.centerX, this.centerY, radius, startAngle, endAngle);
+            this.ctx.moveTo(this.canvas.width / 2, this.canvas.height / 2);
+            this.ctx.arc(this.canvas.width / 2, this.canvas.height / 2, radius, startAngle, endAngle);
             this.ctx.closePath();
             
+            // Calculate opacity for 3D effect
             const opacity = Math.abs(Math.cos((midAngle + Math.PI / 2))) * 0.3 + 0.7;
             this.ctx.fillStyle = this.adjustOpacity(color, opacity);
             this.ctx.fill();
             
             // Draw segment border
-            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-            this.ctx.lineWidth = 1;
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            this.ctx.lineWidth = 2;
             this.ctx.stroke();
             
             // Draw text
             const textRadius = radius * 0.75;
-            const x = this.centerX + Math.cos(midAngle) * textRadius;
-            const y = this.centerY + Math.sin(midAngle) * textRadius;
+            const x = (this.canvas.width / 2) + Math.cos(midAngle) * textRadius;
+            const y = (this.canvas.height / 2) + Math.sin(midAngle) * textRadius;
             
             this.ctx.save();
             this.ctx.translate(x, y);
             this.ctx.rotate(midAngle + Math.PI / 2);
             this.ctx.fillStyle = this.colors.text;
-            this.ctx.font = 'bold 14px Arial';
+            this.ctx.font = 'bold 12px Arial';
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText(String(item), 0, 0);
@@ -260,9 +236,14 @@ class SpinningWheelCalendar {
     }
     
     draw() {
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        
         // Clear canvas
-        this.ctx.fillStyle = this.colors.background;
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.fillStyle = '#F7F7F7';
+        this.ctx.fillRect(0, 0, width, height);
         
         // Draw wheels (outer to inner)
         this.drawWheel(this.dateRotation, this.outerRadius, this.dates, this.colors.dateWheel);
@@ -271,7 +252,7 @@ class SpinningWheelCalendar {
         
         // Draw center circle
         this.ctx.beginPath();
-        this.ctx.arc(this.centerX, this.centerY, this.canvas.width * 0.08, 0, Math.PI * 2);
+        this.ctx.arc(centerX, centerY, 40, 0, Math.PI * 2);
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.fill();
         this.ctx.strokeStyle = '#DDD';
@@ -283,9 +264,9 @@ class SpinningWheelCalendar {
         this.ctx.font = 'bold 12px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.fillText('SPIN', this.centerX, this.centerY - 8);
+        this.ctx.fillText('SPIN', centerX, centerY - 10);
         this.ctx.font = '10px Arial';
-        this.ctx.fillText('ME', this.centerX, this.centerY + 6);
+        this.ctx.fillText('ME', centerX, centerY + 8);
     }
 }
 
