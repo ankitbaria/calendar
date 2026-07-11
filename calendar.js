@@ -1,6 +1,11 @@
 class SpinningWheelCalendar {
     constructor() {
         this.canvas = document.getElementById('wheelCanvas');
+        if (!this.canvas) {
+            console.error('Canvas element not found!');
+            return;
+        }
+        
         this.ctx = this.canvas.getContext('2d');
         
         // Set canvas size
@@ -44,6 +49,9 @@ class SpinningWheelCalendar {
         this.setupEventListeners();
         this.updateDisplay();
         this.draw();
+        
+        // Animation loop
+        setInterval(() => this.draw(), 30);
     }
     
     setupEventListeners() {
@@ -93,7 +101,6 @@ class SpinningWheelCalendar {
         }
         
         this.updateDisplay();
-        this.draw();
     }
     
     onMouseUp() {
@@ -125,6 +132,7 @@ class SpinningWheelCalendar {
     
     onTouchMove(e) {
         if (!this.isDragging || !this.currentDragWheel) return;
+        e.preventDefault();
         
         const touch = e.touches[0];
         const deltaY = touch.clientY - this.dragStartY;
@@ -139,7 +147,6 @@ class SpinningWheelCalendar {
         }
         
         this.updateDisplay();
-        this.draw();
     }
     
     getSelectedIndex(rotation, arrayLength) {
@@ -184,7 +191,7 @@ class SpinningWheelCalendar {
         document.getElementById('dayOfWeekValue').textContent = dayName;
     }
     
-    drawWheel(rotation, radius, items, color, isSelectorWheel) {
+    drawWheel(rotation, radius, items, color) {
         const segmentAngle = (Math.PI * 2) / items.length;
         
         items.forEach((item, index) => {
@@ -268,7 +275,11 @@ class SpinningWheelCalendar {
     }
 }
 
-// Initialize when page loads
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        new SpinningWheelCalendar();
+    });
+} else {
     new SpinningWheelCalendar();
-});
+}
