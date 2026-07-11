@@ -7,17 +7,12 @@ class SpinningWheelCalendar {
         }
         
         this.ctx = this.canvas.getContext('2d');
+        this.setupCanvas();
         
-        // Set canvas size
-        this.canvas.width = 500;
-        this.canvas.height = 500;
-        this.centerX = this.canvas.width / 2;
-        this.centerY = this.canvas.height / 2;
-        
-        // Wheel configuration
-        this.outerRadius = 220;
-        this.middleRadius = 145;
-        this.innerRadius = 70;
+        // Wheel configuration (will scale based on canvas size)
+        this.outerRadius = 0;
+        this.middleRadius = 0;
+        this.innerRadius = 0;
         
         // Rotation angles (in radians)
         this.dateRotation = 0;
@@ -52,6 +47,29 @@ class SpinningWheelCalendar {
         
         // Animation loop
         setInterval(() => this.draw(), 30);
+        
+        // Handle window resize
+        window.addEventListener('resize', () => this.setupCanvas());
+    }
+    
+    setupCanvas() {
+        // Get the wheel section dimensions
+        const wheelSection = this.canvas.parentElement;
+        let size = Math.min(wheelSection.clientWidth, wheelSection.clientHeight);
+        
+        // Set minimum and maximum sizes
+        size = Math.max(200, Math.min(size, 400));
+        
+        this.canvas.width = size;
+        this.canvas.height = size;
+        
+        this.centerX = this.canvas.width / 2;
+        this.centerY = this.canvas.height / 2;
+        
+        // Set radii based on canvas size
+        this.outerRadius = size * 0.44;
+        this.middleRadius = size * 0.29;
+        this.innerRadius = size * 0.14;
     }
     
     setupEventListeners() {
@@ -185,10 +203,6 @@ class SpinningWheelCalendar {
         
         document.getElementById('dayName').textContent = dayName;
         document.getElementById('dateValue').textContent = dateString;
-        document.getElementById('monthValue').textContent = month;
-        document.getElementById('dateNumValue').textContent = String(date).padStart(2, '0');
-        document.getElementById('yearValue').textContent = year;
-        document.getElementById('dayOfWeekValue').textContent = dayName;
     }
     
     drawWheel(rotation, radius, items, color) {
@@ -257,7 +271,7 @@ class SpinningWheelCalendar {
         
         // Draw center circle
         this.ctx.beginPath();
-        this.ctx.arc(this.centerX, this.centerY, 40, 0, Math.PI * 2);
+        this.ctx.arc(this.centerX, this.centerY, this.canvas.width * 0.08, 0, Math.PI * 2);
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.fill();
         this.ctx.strokeStyle = '#DDD';
@@ -269,9 +283,9 @@ class SpinningWheelCalendar {
         this.ctx.font = 'bold 12px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.fillText('SPIN', this.centerX, this.centerY - 10);
+        this.ctx.fillText('SPIN', this.centerX, this.centerY - 8);
         this.ctx.font = '10px Arial';
-        this.ctx.fillText('ME', this.centerX, this.centerY + 8);
+        this.ctx.fillText('ME', this.centerX, this.centerY + 6);
     }
 }
 
